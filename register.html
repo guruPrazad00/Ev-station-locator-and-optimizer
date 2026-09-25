@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#143d33" />
+  <title>VoltRoute | Register / Log in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .auth-wrap{max-width:640px;margin:0 auto;padding:24px 14px 40px;width:100%}
+    .auth-wrap h1{font-size:32px;letter-spacing:-1px;margin:6px 0 4px}
+    .auth-wrap>p{color:var(--muted);font-size:13px;margin:0 0 16px}
+    .tabs{display:flex;gap:8px;margin-bottom:14px}
+    .tabs button{flex:1;min-height:var(--tap);border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:800;font-size:15px;cursor:pointer;color:var(--ink);font-family:inherit}
+    .tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+    .card label{display:grid;gap:5px;font:700 10px 'DM Mono',monospace;color:#71817a;letter-spacing:.1em;margin-bottom:12px}
+    .card input[type=text],.card input[type=email],.card input[type=password],.card input[type=number]{border:1px solid var(--line);border-radius:10px;padding:12px;font:600 15px Manrope,Arial,sans-serif;color:var(--ink);min-width:0;width:100%}
+    .roles{display:flex;gap:8px;margin-bottom:12px}
+    .roles label{flex:1;display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px;font:700 13px Manrope,Arial,sans-serif;color:var(--ink);letter-spacing:0;cursor:pointer}
+    .roles input{width:18px;height:18px;accent-color:var(--green)}
+    fieldset{border:1px dashed var(--line);border-radius:10px;padding:12px;margin:0 0 12px}
+    fieldset legend{font:700 10px 'DM Mono',monospace;color:#71817a;letter-spacing:.1em;padding:0 6px}
+    .conn-grid{display:flex;flex-wrap:wrap;gap:8px}
+    .conn-grid label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:700 12px Manrope,Arial,sans-serif;color:var(--ink);letter-spacing:0;margin:0;cursor:pointer}
+    .form-msg{min-height:22px;font-size:13px;font-weight:700;margin:4px 0 0}
+    .form-msg.error{color:#a4442c}
+    .form-msg.ok{color:var(--green)}
+    .mine{margin-top:14px}
+    .mine li{font-size:13px;margin-bottom:6px}
+    .back{display:inline-block;margin-bottom:8px;font-size:13px;font-weight:700}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header><a class="brand" href="/"><b>↯</b>volt<span>route</span></a><span class="demo"><i></i> ACCOUNTS</span></header>
+    <div class="auth-wrap">
+      <a class="back" href="/">← Back to map</a>
+      <p>EV CHARGING LOCATOR</p>
+      <h1>Join VoltRoute.</h1>
+      <p>Drivers save nothing but a login — station owners can list their chargers on the live map.</p>
+      <div class="tabs">
+        <button type="button" id="tab-register" class="active">Register</button>
+        <button type="button" id="tab-login">Log in</button>
+      </div>
+
+      <form id="form-register" class="card" autocomplete="on">
+        <label>NAME<input type="text" id="reg-name" maxlength="80" required /></label>
+        <label>EMAIL<input type="email" id="reg-email" maxlength="120" required /></label>
+        <label>PASSWORD (8+ CHARACTERS)<input type="password" id="reg-password" minlength="8" maxlength="128" required /></label>
+        <div class="roles">
+          <label><input type="radio" name="role" value="user" checked /> EV driver</label>
+          <label><input type="radio" name="role" value="owner" /> Station owner</label>
+        </div>
+        <fieldset id="station-fields" hidden>
+          <legend>YOUR STATION (LISTED ON THE MAP)</legend>
+          <label>STATION NAME<input type="text" id="st-name" maxlength="120" /></label>
+          <label>LATITUDE<input type="number" id="st-lat" step="any" min="-90" max="90" placeholder="12.9716" /></label>
+          <label>LONGITUDE<input type="number" id="st-lng" step="any" min="-180" max="180" placeholder="77.5946" /></label>
+          <label>ADDRESS<input type="text" id="st-address" maxlength="200" /></label>
+          <label>OPERATOR<input type="text" id="st-operator" maxlength="80" /></label>
+          <label>POWER (KW, OPTIONAL)<input type="number" id="st-power" step="any" min="0" max="1000" /></label>
+          <div class="conn-grid" id="st-connectors">
+            <label><input type="checkbox" value="CCS2" /> CCS2</label>
+            <label><input type="checkbox" value="Type 2" /> Type 2</label>
+            <label><input type="checkbox" value="CHAdeMO" /> CHAdeMO</label>
+            <label><input type="checkbox" value="Type 1" /> Type 1</label>
+            <label><input type="checkbox" value="Tesla" /> Tesla</label>
+            <label><input type="checkbox" value="Bharat AC-001" /> Bharat AC-001</label>
+            <label><input type="checkbox" value="Bharat DC-001" /> Bharat DC-001</label>
+          </div>
+        </fieldset>
+        <button type="submit" class="primary" style="width:100%">Create account <b>→</b></button>
+        <p class="form-msg" id="reg-msg" role="status"></p>
+      </form>
+
+      <form id="form-login" class="card" hidden autocomplete="on">
+        <label>EMAIL<input type="email" id="login-email" maxlength="120" required /></label>
+        <label>PASSWORD<input type="password" id="login-password" required /></label>
+        <button type="submit" class="primary" style="width:100%">Log in <b>→</b></button>
+        <p class="form-msg" id="login-msg" role="status"></p>
+      </form>
+
+      <div id="account-panel" class="card mine" hidden>
+        <p style="margin-top:0"><strong id="account-name"></strong> · <span id="account-role"></span></p>
+        <button type="button" class="ghost" id="logout-btn">Log out</button>
+        <div id="my-stations"></div>
+      </div>
+    </div>
+    <footer class="attrib">Accounts are stored in PostgreSQL with bcrypt-hashed passwords. Tokens expire after 7 days.</footer>
+  </main>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const session = {
+  get token() { return localStorage.getItem("voltroute-token"); },
+  set token(v) { v ? localStorage.setItem("voltroute-token", v) : localStorage.removeItem("voltroute-token"); },
+};
+
+async function api(path, options = {}) {
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (session.token) headers.Authorization = `Bearer ${session.token}`;
+  const res = await fetch(path, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+
+function showTab(which) {
+  $("#tab-register").classList.toggle("active", which === "register");
+  $("#tab-login").classList.toggle("active", which === "login");
+  $("#form-register").hidden = which !== "register";
+  $("#form-login").hidden = which !== "login";
+}
+$("#tab-register").onclick = () => showTab("register");
+$("#tab-login").onclick = () => showTab("login");
+
+document.querySelectorAll('input[name="role"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    const owner = document.querySelector('input[name="role"]:checked').value === "owner";
+    $("#station-fields").hidden = !owner;
+  });
+});
+
+function setMsg(id, text, ok) {
+  const el = $(id);
+  el.textContent = text;
+  el.className = "form-msg" + (text ? (ok ? " ok" : " error") : "");
+}
+
+async function refreshAccount() {
+  const panel = $("#account-panel");
+  try {
+    if (!session.token) { panel.hidden = true; return; }
+    const me = await api("/api/auth/me");
+    $("#account-name").textContent = `${me.name} (${me.email})`;
+    $("#account-role").textContent = me.role === "owner" ? "Station owner" : "EV driver";
+    panel.hidden = false;
+    if (me.role === "owner") {
+      const mine = await api("/api/listings/mine");
+      $("#my-stations").innerHTML = mine.count
+        ? `<p><strong>Your stations (${mine.count})</strong></p><ul>${mine.stations.map((s) => `<li>${escapeHtml(s.name)} — ${s.connectors.join(", ") || "Unknown"} · ${s.status}</li>`).join("")}</ul>`
+        : "<p>You have not listed any stations yet.</p>";
+    } else {
+      $("#my-stations").innerHTML = "";
+    }
+  } catch {
+    session.token = null;
+    panel.hidden = true;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+$("#form-register").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  setMsg("#reg-msg", "");
+  const role = document.querySelector('input[name="role"]:checked').value;
+  try {
+    const { user, token } = await api("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: $("#reg-name").value.trim(),
+        email: $("#reg-email").value.trim(),
+        password: $("#reg-password").value,
+        role,
+      }),
+    });
+    session.token = token;
+    if (role === "owner" && $("#st-name").value.trim()) {
+      const connectors = [...document.querySelectorAll("#st-connectors input:checked")].map((c) => c.value);
+      const stationBody = {
+        name: $("#st-name").value.trim(),
+        lat: Number($("#st-lat").value),
+        lng: Number($("#st-lng").value),
+        address: $("#st-address").value.trim(),
+        operator: $("#st-operator").value.trim(),
+        connectors,
+      };
+      if ($("#st-power").value !== "") stationBody.powerKw = Number($("#st-power").value);
+      try {
+        await api("/api/listings", { method: "POST", body: JSON.stringify(stationBody) });
+        setMsg("#reg-msg", `Welcome, ${user.name}! Account created and station listed on the map.`, true);
+      } catch (stationErr) {
+        setMsg("#reg-msg", `Account created, but the station was rejected: ${stationErr.message}`, false);
+      }
+    } else {
+      setMsg("#reg-msg", `Welcome, ${user.name}! Account created.`, true);
+    }
+    refreshAccount();
+  } catch (err) {
+    setMsg("#reg-msg", err.message, false);
+  }
+});
+
+$("#form-login").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  setMsg("#login-msg", "");
+  try {
+    const { user, token } = await api("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: $("#login-email").value.trim(), password: $("#login-password").value }),
+    });
+    session.token = token;
+    setMsg("#login-msg", `Welcome back, ${user.name}!`, true);
+    refreshAccount();
+  } catch (err) {
+    setMsg("#login-msg", err.message, false);
+  }
+});
+
+$("#logout-btn").onclick = () => { session.token = null; refreshAccount(); setMsg("#login-msg", "Logged out."); };
+refreshAccount();
+</script>
+</body>
+</html>

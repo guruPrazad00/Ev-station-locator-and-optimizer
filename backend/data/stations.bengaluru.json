@@ -1,0 +1,200 @@
+[
+  {
+    "id": "stn-ather-indiranagar",
+    "name": "Ather Grid — Indiranagar",
+    "lat": 12.9784,
+    "lng": 77.6408,
+    "address": "100 Feet Rd, Indiranagar, Bengaluru 560038",
+    "operator": "Ather Energy",
+    "connectors": ["CCS2", "Type 2"],
+    "powerKw": 7.2,
+    "source": "curated"
+  },
+  {
+    "id": "stn-tata-mgroad",
+    "name": "Tata Power EZ Charge — MG Road",
+    "lat": 12.9757,
+    "lng": 77.6013,
+    "address": "MG Road, Bengaluru 560001",
+    "operator": "Tata Power",
+    "connectors": ["CCS2", "CHAdeMO", "Type 2"],
+    "powerKw": 25,
+    "source": "curated"
+  },
+  {
+    "id": "stn-statiq-yeshwanthpur",
+    "name": "Statiq — Yeshwanthpur",
+    "lat": 13.0285,
+    "lng": 77.5549,
+    "address": "Tumkur Rd, Yeshwanthpur, Bengaluru 560022",
+    "operator": "Statiq",
+    "connectors": ["CCS2", "Type 2"],
+    "powerKw": 60,
+    "source": "curated"
+  },
+  {
+    "id": "stn-chargezone-hebbal",
+    "name": "ChargeZone — Hebbal",
+    "lat": 13.0358,
+    "lng": 77.597,
+    "address": "Bellary Rd, Hebbal, Bengaluru 560024",
+    "operator": "ChargeZone",
+    "connectors": ["CCS2"],
+    "powerKw": 120,
+    "source": "curated"
+  },
+  {
+    "id": "stn-tata-manyata",
+    "name": "Tata Power — Manyata Tech Park",
+    "lat": 13.0512,
+    "lng": 77.5966,
+    "address": "Manyata Embassy Business Park, Bengaluru 560045",
+    "operator": "Tata Power",
+    "connectors": ["Type 2", "CCS2"],
+    "powerKw": 25,
+    "source": "curated"
+  },
+  {
+    "id": "stn-ather-jakkur",
+    "name": "Ather Grid — Jakkur",
+    "lat": 13.0657,
+    "lng": 77.5969,
+    "address": "Bellary Rd, Jakkur, Bengaluru 560064",
+    "operator": "Ather Energy",
+    "connectors": ["Type 2"],
+    "powerKw": 7.2,
+    "source": "curated"
+  },
+  {
+    "id": "stn-zeon-whitefield",
+    "name": "Zeon Charging — Whitefield",
+    "lat": 12.9698,
+    "lng": 77.7499,
+    "address": "ITPL Main Rd, Whitefield, Bengaluru 560066",
+    "operator": "Zeon",
+    "connectors": ["CCS2", "CHAdeMO"],
+    "powerKw": 50,
+    "source": "curated"
+  },
+  {
+    "id": "stn-jio-marathahalli",
+    "name": "Jio-bp pulse — Marathahalli",
+    "lat": 12.9591,
+    "lng": 77.6974,
+    "address": "Outer Ring Rd, Marathahalli, Bengaluru 560037",
+    "operator": "Jio-bp",
+    "connectors": ["CCS2", "Type 2"],
+    "powerKw": 60,
+    "source": "curated"
+  },
+  {
+    "id": "stn-kor dealership-koramangala",
+    "name": "Relux Electric — Koramangala",
+    "lat": 12.9352,
+    "lng": 77.6245,
+    "address": "80 Feet Rd, Koramangala, Bengaluru 560095",
+    "operator": "Relux Electric",
+    "connectors": ["CCS2", "Type 2"],
+    "powerKw": 30,
+    "source": "curated"
+  },
+  {
+    "id": "stn-hsr-sector27",
+    "name": "ChargeZone — HSR Layout",
+    "lat": 12.9116,
+    "lng": 77.6474,
+    "address": "27th Main, HSR Layout Sector 1, Bengaluru 560102",
+    "operator": "ChargeZone",
+    "connectors": ["CCS2"],
+    "powerKw": 60,
+    "source": "curated"
+  },
+  {
+    "id": "stn-electronic-city",
+    "name": "Tata Power — Electronic City",
+    "lat": 12.8452,
+    "lng": 77.6602,
+    "address": "Neeladri Rd, Electronic City Phase 1, Bengaluru 560100",
+    "operator": "Tata Power",
+    "connectors": ["CCS2", "Type 2"],
+    "powerKw": 25,
+    "source": "curated"
+  },
+  {
+    "id": "stn-peenya",
+    "name": "Statiq — Peenya Industrial Area",
+    "lat": 13.0378,
+    "lng": 77.5232,
+    "address": "Peenya Industrial Area Phase 2, Bengaluru 560058",
+    "operator": "Statiq",
+    "connectors": ["CCS2"],
+    "powerKw": 60,
+    "source": "curated"
+  },
+  {
+    "id": "stn-malleshwaram",
+    "name": "Ather Grid — Malleshwaram",
+    "lat": 13.0035,
+    "lng": 77.5648,
+    "address": "Sampige Rd, Malleshwaram, Bengaluru 560003",
+    "operator": "Ather Energy",
+    "connectors": ["Type 2"],
+    "powerKw": 7.2,
+    "source": "curated"
+  },
+  {
+    "id": "stn-jp-nagar",
+    "name": "Jio-bp pulse — JP Nagar",
+    "lat": 12.9077,
+    "lng": 77.5851,
+    "address": "Outer Ring Rd, JP Nagar 6th Phase, Bengaluru 560078",
+    "operator": "Jio-bp",
+    "connectors": ["CCS2", "CHAdeMO"],
+    "powerKw": 60,
+    "source": "curated"
+  },
+  {
+    "id": "stn-banashankari",
+    "name": "BESCOM — Banashankari",
+    "lat": 12.9157,
+    "lng": 77.5737,
+    "address": "Kanakapura Rd, Banashankari 3rd Stage, Bengaluru 560085",
+    "operator": "BESCOM",
+    "connectors": ["Type 2", "Bharat AC-001"],
+    "powerKw": 15,
+    "source": "curated"
+  },
+  {
+    "id": "stn-bellandur",
+    "name": "Statiq — Bellandur",
+    "lat": 12.926,
+    "lng": 77.6762,
+    "address": "Outer Ring Rd, Bellandur, Bengaluru 560103",
+    "operator": "Statiq",
+    "connectors": ["CCS2", "Type 2"],
+    "powerKw": 60,
+    "source": "curated"
+  },
+  {
+    "id": "stn-sarjapur",
+    "name": "ChargeZone — Sarjapur Rd",
+    "lat": 12.9081,
+    "lng": 77.6979,
+    "address": "Sarjapur Main Rd, Bengaluru 560035",
+    "operator": "ChargeZone",
+    "connectors": ["CCS2"],
+    "powerKw": 120,
+    "source": "curated"
+  },
+  {
+    "id": "stn-airport-road",
+    "name": "Zeon Charging — Airport Rd",
+    "lat": 13.0904,
+    "lng": 77.5946,
+    "address": "Bellary Rd, Near Hebbal Flyover, Bengaluru 560092",
+    "operator": "Zeon",
+    "connectors": ["CCS2", "CHAdeMO", "Type 2"],
+    "powerKw": 50,
+    "source": "curated"
+  }
+]
