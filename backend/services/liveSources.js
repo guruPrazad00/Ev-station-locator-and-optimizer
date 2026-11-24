@@ -274,7 +274,7 @@ async function liveFromOCM(lat, lng, radiusKm) {
   if (hit) return hit;
   const url =
     `${OCM_BASE_URL}/?output=json&latitude=${lat}&longitude=${lng}` +
-    `&distance=${radiusKm}&distanceunit=KM&maxresults=60&compact=true&verbose=false`;
+    `&distance=${radiusKm}&distanceunit=KM&maxresults=60&verbose=true`;
   const res = await fetchWithTimeout(
     url,
     { headers: { "X-API-Key": OCM_API_KEY } },
@@ -294,6 +294,11 @@ async function liveFromOCM(lat, lng, radiusKm) {
         const powers = conns
           .map((c) => Number(c.PowerKW))
           .filter((n) => Number.isFinite(n) && n > 0);
+        const levels = [...new Set(conns.map((c) => c.Level?.Title).filter(Boolean))];
+        const currentTypes = [...new Set(conns.map((c) => c.CurrentType?.Title).filter(Boolean))];
+        const statuses = [...new Set(conns.map((c) => c.StatusType?.Title).filter(Boolean))];
+        const voltages = [...new Set(conns.map((c) => Number(c.Voltage)).filter((n) => Number.isFinite(n) && n > 0))];
+        const amps = [...new Set(conns.map((c) => Number(c.Amps)).filter((n) => Number.isFinite(n) && n > 0))];
         const st = {
           id: `ocm-${poi.ID}`,
           sourceId: `ocm/${poi.ID}`,
@@ -311,6 +316,11 @@ async function liveFromOCM(lat, lng, radiusKm) {
           operator: poi.OperatorInfo?.Title || undefined,
           connectors: [...new Set(conns.map((c) => c.ConnectionType.Title))].slice(0, 6),
           source: "openchargemap",
+          chargingLevels: levels.length ? levels : undefined,
+          currentType: currentTypes.length ? currentTypes.join(" / ") : undefined,
+          voltage: voltages.length ? voltages.join(" V / ") + " V" : undefined,
+          amperage: amps.length ? amps.join(" A / ") + " A" : undefined,
+          status: statuses.length ? statuses.join(" / ") : undefined,
         };
         if (powers.length) st.powerKw = Math.max(...powers);
         if (poi.DateLastStatusUpdate) st.updatedAt = poi.DateLastStatusUpdate;

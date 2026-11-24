@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: voltroute-ev-locator
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generate: true
+      - key: JWT_EXPIRES
+        value: 7d
+      - key: TOMTOM_API_KEY
+        sync: false
+      - key: CARTO_BASEMAPS_KEY
+        sync: false
+      - key: OCM_API_KEY
+        sync: false
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false

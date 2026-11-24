@@ -263,6 +263,7 @@ function renderList() {
           <span>${escapeHtml(connectorText(s))}</span>
           <span>${escapeHtml(powerText(s))}</span>
           <span>${escapeHtml(operatorText(s))}</span>
+          ${s.chargingLevels ? `<span>Level ${escapeHtml(s.chargingLevels.join(" / "))}</span>` : ""}
         </div>
         ${candidateText(s) ? `<p class="distance">${escapeHtml(candidateText(s))}</p>` : ""}
       </div>
@@ -308,6 +309,11 @@ function showDetail(s, route, routeError) {
       <span>${escapeHtml(connectorText(s))}</span>
       <span>${escapeHtml(powerText(s))}</span>
       <span>${escapeHtml(operatorText(s))}</span>
+      ${s.chargingLevels ? `<span>Level ${escapeHtml(s.chargingLevels.join(" / "))}</span>` : ""}
+      ${s.currentType ? `<span>${escapeHtml(s.currentType)}</span>` : ""}
+      ${s.voltage ? `<span>${escapeHtml(s.voltage)}</span>` : ""}
+      ${s.amperage ? `<span>${escapeHtml(s.amperage)}</span>` : ""}
+      ${s.status ? `<span>Status: ${escapeHtml(s.status)}</span>` : ""}
       ${s.aiScore !== undefined ? `<span>AI ${escapeHtml(s.aiScore)}/100</span>` : ""}
     </div>
     <p class="source-ref">${escapeHtml(sourceRef(s))}</p>
