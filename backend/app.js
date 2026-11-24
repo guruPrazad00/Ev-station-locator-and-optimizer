@@ -16,7 +16,7 @@ const authRouter = require("./routes/auth");
 const listingsRouter = require("./routes/listings");
 const { initDb } = require("./db");
 
-// Accounts/listings need Postgres; everything else must work without it,
+// Accounts/listings need MySQL; everything else must work without it,
 // so schema setup failure is logged, never fatal.
 initDb().catch((err) => console.error("[db] init failed (auth/listings disabled):", err.message));
 
@@ -57,7 +57,16 @@ app.use(express.static(path.join(__dirname, "..")));
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   // Keep diagnostics on the server while preserving the generic client response.
-  console.error("API error:", err.message);
+  console.error("API error:", err.code ? `${err.code}: ${err.message}` : err.message);
+  // Database outages are a dependency failure, not a bug in this app. Only the
+  // account/listing endpoints can hit these; map/routing continue to work.
+  const dbCodes = new Set([
+    "ECONNREFUSED", "ER_ACCESS_DENIED_ERROR", "ER_BAD_DB_ERROR", "ER_NO_SUCH_TABLE",
+    "PROTOCOL_CONNECTION_LOST", "ETIMEDOUT", "ENOTFOUND", "EHOSTUNREACH", "POOL_CLOSED",
+  ]);
+  if (err.code && dbCodes.has(err.code)) {
+    return res.status(503).json({ error: "Account database is unavailable. Try again shortly." });
+  }
   const status = err.status && Number.isInteger(err.status) ? err.status : 500;
   // Never leak internals: unexpected failures get a generic message.
   const message = err.status ? err.message || "Request failed." : "Internal server error.";

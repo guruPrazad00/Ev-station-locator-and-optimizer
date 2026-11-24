@@ -17,6 +17,11 @@ if (!JWT_SECRET) {
 
 const SECRET = JWT_SECRET || "voltroute-dev-only-secret-do-not-use-in-production";
 
+// A real bcrypt hash of an unguessable value. Login compares against it when
+// the email is unknown so the reply takes roughly the same time either way,
+// preventing account enumeration via response-timing differences.
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync("voltroute-not-a-real-password", BCRYPT_ROUNDS);
+
 function hashPassword(password) {
   return bcrypt.hash(password, BCRYPT_ROUNDS);
 }
@@ -38,4 +43,4 @@ function publicUser(row) {
   return { id: row.id, name: row.name, email: row.email, role: row.role, createdAt: row.created_at };
 }
 
-module.exports = { hashPassword, verifyPassword, signToken, verifyToken, publicUser };
+module.exports = { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword, signToken, verifyToken, publicUser };

@@ -18,7 +18,7 @@
     .tabs button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
     .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
     .card label{display:grid;gap:5px;font:700 10px 'DM Mono',monospace;color:#71817a;letter-spacing:.1em;margin-bottom:12px}
-    .card input[type=text],.card input[type=email],.card input[type=password],.card input[type=number]{border:1px solid var(--line);border-radius:10px;padding:12px;font:600 15px Manrope,Arial,sans-serif;color:var(--ink);min-width:0;width:100%}
+    .card input[type=text],.card input[type=email],.card input[type=password],.card input[type=number],.card input[type=url],.card input[type=tel]{border:1px solid var(--line);border-radius:10px;padding:12px;font:600 15px Manrope,Arial,sans-serif;color:var(--ink);min-width:0;width:100%}
     .roles{display:flex;gap:8px;margin-bottom:12px}
     .roles label{flex:1;display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px;font:700 13px Manrope,Arial,sans-serif;color:var(--ink);letter-spacing:0;cursor:pointer}
     .roles input{width:18px;height:18px;accent-color:var(--green)}
@@ -32,16 +32,20 @@
     .mine{margin-top:14px}
     .mine li{font-size:13px;margin-bottom:6px}
     .back{display:inline-block;margin-bottom:8px;font-size:13px;font-weight:700}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:560px){.grid2{grid-template-columns:1fr}}
+    details.optional{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px}
+    details.optional summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--ink)}
+    details.optional[open] summary{margin-bottom:12px}
   </style>
 </head>
 <body>
   <main class="app">
-    <header><a class="brand" href="/"><b>↯</b>volt<span>route</span></a><span class="demo"><i></i> ACCOUNTS</span></header>
+    <header><a class="brand" href="/"><b>↯</b>volt<span>route</span></a><a class="demo" href="/" style="text-decoration:none">← MAP</a><span class="demo"><i></i> ACCOUNTS</span></header>
     <div class="auth-wrap">
-      <a class="back" href="/">← Back to map</a>
       <p>EV CHARGING LOCATOR</p>
       <h1>Join VoltRoute.</h1>
-      <p>Drivers save nothing but a login — station owners can list their chargers on the live map.</p>
+      <p>Drivers save nothing but a login — station owners can list their chargers on the live Bengaluru map.</p>
       <div class="tabs">
         <button type="button" id="tab-register" class="active">Register</button>
         <button type="button" id="tab-login">Log in</button>
@@ -57,11 +61,15 @@
         </div>
         <fieldset id="station-fields" hidden>
           <legend>YOUR STATION (LISTED ON THE MAP)</legend>
-          <label>STATION NAME<input type="text" id="st-name" maxlength="120" /></label>
-          <label>LATITUDE<input type="number" id="st-lat" step="any" min="-90" max="90" placeholder="12.9716" /></label>
-          <label>LONGITUDE<input type="number" id="st-lng" step="any" min="-180" max="180" placeholder="77.5946" /></label>
+          <div class="grid2">
+            <label>STATION NAME<input type="text" id="st-name" maxlength="120" /></label>
+            <label>OPERATOR<input type="text" id="st-operator" maxlength="80" /></label>
+          </div>
+          <div class="grid2">
+            <label>LATITUDE<input type="number" id="st-lat" step="any" min="12.4" max="13.6" placeholder="12.9716" /></label>
+            <label>LONGITUDE<input type="number" id="st-lng" step="any" min="77.0" max="78.1" placeholder="77.5946" /></label>
+          </div>
           <label>ADDRESS<input type="text" id="st-address" maxlength="200" /></label>
-          <label>OPERATOR<input type="text" id="st-operator" maxlength="80" /></label>
           <label>POWER (KW, OPTIONAL)<input type="number" id="st-power" step="any" min="0" max="1000" /></label>
           <div class="conn-grid" id="st-connectors">
             <label><input type="checkbox" value="CCS2" /> CCS2</label>
@@ -72,6 +80,23 @@
             <label><input type="checkbox" value="Bharat AC-001" /> Bharat AC-001</label>
             <label><input type="checkbox" value="Bharat DC-001" /> Bharat DC-001</label>
           </div>
+          <details class="optional">
+            <summary>Contact &amp; extra details (optional)</summary>
+            <div class="grid2">
+              <label>PHONE<input type="tel" id="st-phone" maxlength="30" placeholder="+91 80 1234 5678" /></label>
+              <label>PIN CODE<input type="text" id="st-postal" maxlength="20" inputmode="numeric" placeholder="560001" /></label>
+              <label>TARIFF (₹/KWH)<input type="text" id="st-tariff" maxlength="80" placeholder="18" /></label>
+              <label>OPENING HOURS<input type="text" id="st-hours" maxlength="120" placeholder="24x7" /></label>
+              <label>STATUS
+                <select id="st-status">
+                  <option value="operational">Operational</option>
+                  <option value="maintenance">Under maintenance</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </label>
+              <label>IMAGE URL<input type="url" id="st-image" maxlength="500" placeholder="https://…" /></label>
+            </div>
+          </details>
         </fieldset>
         <button type="submit" class="primary" style="width:100%">Create account <b>→</b></button>
         <p class="form-msg" id="reg-msg" role="status"></p>
@@ -90,7 +115,7 @@
         <div id="my-stations"></div>
       </div>
     </div>
-    <footer class="attrib">Accounts are stored in PostgreSQL with bcrypt-hashed passwords. Tokens expire after 7 days.</footer>
+    <footer class="attrib">Accounts are stored in MySQL with bcrypt-hashed passwords. Tokens expire after 7 days.</footer>
   </main>
 <script>
 "use strict";
@@ -157,6 +182,59 @@ function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+function readStation() {
+  const name = $("#st-name").value.trim();
+  const latRaw = $("#st-lat").value;
+  const lngRaw = $("#st-lng").value;
+  const connectors = [...document.querySelectorAll("#st-connectors input:checked")].map((c) => c.value);
+  const address = $("#st-address").value.trim();
+  const operator = $("#st-operator").value.trim();
+  if (!name && !latRaw && !lngRaw && !connectors.length && !address && !operator) return null;
+
+  if (name.length < 2) return { error: "Station name must be at least 2 characters." };
+  const lat = Number(latRaw);
+  const lng = Number(lngRaw);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return { error: "Station latitude and longitude are required." };
+  if (lat < 12.4 || lat > 13.6 || lng < 77.0 || lng > 78.1) return { error: "Coordinates must be inside Bengaluru (12.4–13.6, 77.0–78.1)." };
+  if (!connectors.length) return { error: "Select at least one connector." };
+
+  const payload = { name, lat, lng, address, operator, connectors };
+  const power = $("#st-power").value;
+  if (power) {
+    const n = Number(power);
+    if (!Number.isFinite(n) || n < 1 || n > 1000) return { error: "Power must be between 1 and 1000 kW." };
+    payload.powerKw = n;
+  }
+  const phone = $("#st-phone").value.trim();
+  if (phone && !/^[0-9+\-()\s]{6,20}$/.test(phone)) return { error: "Enter a valid phone number." };
+  const postal = $("#st-postal").value.trim();
+  if (postal && !/^[1-9][0-9]{5}$/.test(postal)) return { error: "PIN code must be 6 digits." };
+  const imageUrl = $("#st-image").value.trim();
+  if (imageUrl && !/^https?:\/\/[^\s]+$/i.test(imageUrl)) return { error: "Image URL must start with http:// or https://." };
+
+  return {
+    station: {
+      ...payload,
+      phone,
+      city: "Bengaluru",
+      state: "Karnataka",
+      postalCode: postal,
+      tariff: $("#st-tariff").value.trim(),
+      openingHours: $("#st-hours").value.trim(),
+      operationalStatus: $("#st-status").value || "operational",
+      imageUrl,
+    },
+  };
+}
+
+function resetStation() {
+  for (const f of ["name","lat","lng","address","operator","power","postal","tariff","hours","image"]) {
+    $("#st-" + f).value = "";
+  }
+  $("#st-status").value = "operational";
+  document.querySelectorAll("#st-connectors input:checked").forEach((c) => { c.checked = false; });
+}
+
 $("#form-register").addEventListener("submit", async (e) => {
   e.preventDefault();
   setMsg("#reg-msg", "");
@@ -172,26 +250,26 @@ $("#form-register").addEventListener("submit", async (e) => {
       }),
     });
     session.token = token;
-    if (role === "owner" && $("#st-name").value.trim()) {
-      const connectors = [...document.querySelectorAll("#st-connectors input:checked")].map((c) => c.value);
-      const stationBody = {
-        name: $("#st-name").value.trim(),
-        lat: Number($("#st-lat").value),
-        lng: Number($("#st-lng").value),
-        address: $("#st-address").value.trim(),
-        operator: $("#st-operator").value.trim(),
-        connectors,
-      };
-      if ($("#st-power").value !== "") stationBody.powerKw = Number($("#st-power").value);
-      try {
-        await api("/api/listings", { method: "POST", body: JSON.stringify(stationBody) });
-        setMsg("#reg-msg", `Welcome, ${user.name}! Account created and station listed on the map.`, true);
-      } catch (stationErr) {
-        setMsg("#reg-msg", `Account created, but the station was rejected: ${stationErr.message}`, false);
+    if (role === "owner") {
+      const parsed = readStation();
+      if (parsed && parsed.error) {
+        setMsg("#reg-msg", parsed.error, false);
+        return;
+      }
+      if (parsed && parsed.station) {
+        try {
+          await api("/api/listings", { method: "POST", body: JSON.stringify(parsed.station) });
+          setMsg("#reg-msg", `Welcome, ${user.name}! Account created and station listed on the map.`, true);
+        } catch (stationErr) {
+          setMsg("#reg-msg", `Account created, but the station was rejected: ${stationErr.message}`, false);
+        }
+      } else {
+        setMsg("#reg-msg", `Welcome, ${user.name}! Account created.`, true);
       }
     } else {
       setMsg("#reg-msg", `Welcome, ${user.name}! Account created.`, true);
     }
+    resetStation();
     refreshAccount();
   } catch (err) {
     setMsg("#reg-msg", err.message, false);

@@ -40,7 +40,7 @@ function filterByConnector(stations, connector) {
   );
 }
 
-// Owner-approved community listings (Postgres). Lazy-required and
+// Owner-approved community listings (MySQL). Lazy-required and
 // failure-isolated so a database problem can never break the core station
 // endpoints — callers treat a rejection as "no community stations".
 async function communityStations() {

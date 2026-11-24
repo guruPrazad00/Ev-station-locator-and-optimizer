@@ -1,32 +1,51 @@
 "use strict";
 
 // Owner-submitted station listings ("community" source). Prototype policy:
-// submissions are approved immediately so owners see their station on the map
-// without an admin queue. Revisit before any production use.
+// submissions are approved immediately so an owner sees their station on the
+// map without an admin queue. Add moderation before any production use.
 
 const { getPool } = require("../db");
 
-const CONNECTORS = new Set(["CCS2", "Type 2", "Type 1", "CHAdeMO", "Tesla", "GB/T DC", "GB/T AC", "Bharat AC-001", "Bharat DC-001"]);
+const CONNECTORS = new Set([
+  "CCS2", "Type 2", "Type 1", "CHAdeMO", "Tesla",
+  "GB/T DC", "GB/T AC", "Bharat AC-001", "Bharat DC-001",
+]);
 
-function toStation(row) {
-  let connectors = [];
+function parseConnectors(raw) {
   try {
-    const parsed = JSON.parse(row.connectors || "[]");
-    if (Array.isArray(parsed)) connectors = parsed.filter((c) => CONNECTORS.has(c)).slice(0, 6);
-  } catch { /* fall through with empty connectors */ }
+    const parsed = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((c) => CONNECTORS.has(c)).slice(0, 8);
+  } catch {
+    return [];
+  }
+}
+
+// Shape a database row like every other station the API returns.
+function toStation(row) {
   const station = {
     id: `community-${row.id}`,
     sourceId: `community/${row.id}`,
     name: row.name,
     lat: Number(row.lat),
     lng: Number(row.lng),
-    address: row.address || "Bengaluru, Karnataka",
-    connectors,
+    address: row.address || [row.city, row.state].filter(Boolean).join(", ") || "Bengaluru, Karnataka",
+    connectors: parseConnectors(row.connectors),
     source: "community",
   };
   if (row.operator) station.operator = row.operator;
   const power = Number(row.power_kw);
   if (Number.isFinite(power) && power > 0) station.powerKw = power;
+  if (row.phone) station.phone = row.phone;
+  if (row.city) station.city = row.city;
+  if (row.state) station.state = row.state;
+  if (row.postal_code) station.postalCode = row.postal_code;
+  const points = Number(row.charging_points);
+  if (Number.isInteger(points) && points > 0) station.chargingPoints = points;
+  if (row.tariff) station.tariff = row.tariff;
+  if (row.opening_hours) station.openingHours = row.opening_hours;
+  if (row.operational_status) station.operationalStatus = row.operational_status;
+  if (row.image_url) station.imageUrl = row.image_url;
   return station;
 }
 
@@ -47,10 +66,30 @@ async function getOwnerListings(ownerId) {
 
 async function createListing(ownerId, input) {
   const [result] = await getPool().query(
-    `INSERT INTO station_listings (owner_id, name, lat, lng, address, connectors, power_kw, operator, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved')`,
-    [ownerId, input.name, input.lat, input.lng, input.address || "",
-     JSON.stringify(input.connectors), input.powerKw ?? null, input.operator || ""]
+    `INSERT INTO station_listings
+       (owner_id, name, lat, lng, address, connectors, power_kw, operator, status,
+        phone, city, state, postal_code, charging_points, tariff, opening_hours,
+        operational_status, image_url)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      ownerId,
+      input.name,
+      input.lat,
+      input.lng,
+      input.address || "",
+      JSON.stringify(input.connectors),
+      input.powerKw ?? null,
+      input.operator || "",
+      input.phone || "",
+      input.city || "Bengaluru",
+      input.state || "Karnataka",
+      input.postalCode || "",
+      input.chargingPoints ?? null,
+      input.tariff || "",
+      input.openingHours || "",
+      input.operationalStatus || "operational",
+      input.imageUrl || "",
+    ]
   );
   const [rows] = await getPool().query("SELECT * FROM station_listings WHERE id = ?", [result.insertId]);
   const row = rows[0];
