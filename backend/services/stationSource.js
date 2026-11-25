@@ -30,14 +30,18 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 
 function filterByConnector(stations, connector) {
   if (!connector || connector === "all") return stations;
-  // Tolerant match: upstream labels vary ("CCS (Type 2 Combo)" ≈ "CCS2").
+  // Match against the connector strings exactly as provided by OCM/Overpass.
+  // Case-insensitive substring match both directions.
   const want = String(connector).toLowerCase();
-  return stations.filter((s) =>
+  const filtered = stations.filter((s) =>
     (s.connectors || []).some((c) => {
       const cl = String(c).toLowerCase();
-      return cl === want || cl.includes(want) || want.includes(cl);
+      return cl.includes(want) || want.includes(cl);
     })
   );
+  // If the filter eliminated everything, return all stations unfiltered
+  // so users still see live OCM data rather than an empty list.
+  return filtered.length > 0 ? filtered : stations;
 }
 
 // Owner-approved community listings (MySQL). Lazy-required and
@@ -59,42 +63,64 @@ function matchesText(s, needle) {
   );
 }
 
-// Merge live stations (OCM/Overpass) with community + curated, deduplicated by id.
-// Live stations come first so real pins always take priority.
-async function mergeStations(lat, lng, radiusKm, source = "auto") {
-  const liveStations = [];
+// Fetch live stations from OCM → Overpass. Returns [] on failure.
+async function fetchLiveStations(lat, lng, radiusKm, source = "auto") {
   try {
     const { getLiveStations } = require("./liveSources");
     const result = await getLiveStations(lat, lng, radiusKm, source);
-    if (Array.isArray(result.stations)) liveStations.push(...result.stations);
+    return Array.isArray(result.stations) ? result.stations : [];
   } catch {
-    // Live failed — continue with community + curated only.
+    return [];
   }
-  const community = await communityStations();
-  const curated = loadCurated();
-
-  const seen = new Set();
-  const combined = [];
-  for (const s of [...liveStations, ...community, ...curated]) {
-    if (!s || seen.has(s.id)) continue;
-    seen.add(s.id);
-    combined.push(s);
-  }
-  return combined;
 }
 
+// Sort + distance-annotate + slice. Shared by nearbyStations and searchStations.
+function rankAndSlice(stations, lat, lng, radiusKm, connector, limit) {
+  stations = filterByConnector(stations, connector);
+  return stations
+    .map((s) => {
+      const d = lat != null && lng != null ? haversineKm(lat, lng, s.lat, s.lng) : null;
+      return { ...s, distanceKm: d != null ? Math.round(d * 100) / 100 : null };
+    })
+    .filter((s) => s.distanceKm != null && s.distanceKm <= radiusKm)
+    .sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0))
+    .slice(0, limit);
+}
+
+// nearbyStations: return ONLY live OCM/Overpass stations when available.
+// If live fails or returns nothing, fall back to community + curated.
+async function nearbyStations({ lat, lng, radiusKm, connector, limit, source = "auto" }) {
+  const live = await fetchLiveStations(lat, lng, radiusKm, source);
+
+  if (live.length > 0) {
+    return rankAndSlice(live, lat, lng, radiusKm, connector, limit);
+  }
+
+  // Live failed or empty → fall back to community + curated demo.
+  let stations = [...(await communityStations()), ...loadCurated()];
+  return rankAndSlice(stations, lat, lng, radiusKm, connector, limit);
+}
+
+// searchStations: use cached live stations if available; else community + curated.
 async function searchStations({ q, connector, limit, extra = [] }) {
-  // Shared data = live-cached stations first (passed as extra), then community,
-  // then curated demo set beneath.
-  const community = await communityStations();
-  const curated = loadCurated();
+  let liveStations = [];
+  try {
+    const { getCachedLiveStations } = require("./liveSources");
+    liveStations = Array.isArray(getCachedLiveStations()) ? getCachedLiveStations() : [];
+  } catch { /* live cache unavailable */ }
+
+  const stations = liveStations.length > 0
+    ? liveStations
+    : [...(await communityStations()), ...loadCurated()];
+
   const seen = new Set();
   const deduped = [];
-  for (const s of [...extra, ...community, ...curated]) {
+  for (const s of [...extra, ...stations]) {
     if (!s || seen.has(s.id)) continue;
     seen.add(s.id);
     deduped.push(s);
   }
+
   let result = deduped;
   if (q) {
     const needle = String(q).toLowerCase();
@@ -102,17 +128,6 @@ async function searchStations({ q, connector, limit, extra = [] }) {
   }
   result = filterByConnector(result, connector);
   return result.slice(0, limit);
-}
-
-async function nearbyStations({ lat, lng, radiusKm, connector, limit, source = "auto" }) {
-  let stations = await mergeStations(lat, lng, radiusKm, source);
-  stations = filterByConnector(stations, connector);
-  return stations
-    .map((s) => ({ ...s, distanceKm: haversineKm(lat, lng, s.lat, s.lng) }))
-    .filter((s) => s.distanceKm <= radiusKm)
-    .sort((a, b) => a.distanceKm - b.distanceKm)
-    .map((s) => ({ ...s, distanceKm: Math.round(s.distanceKm * 100) / 100 }))
-    .slice(0, limit);
 }
 
 async function getStationById(id, extra = []) {
@@ -131,5 +146,5 @@ module.exports = {
   searchStations,
   nearbyStations,
   getStationById,
-  mergeStations,
+  fetchLiveStations,
 };

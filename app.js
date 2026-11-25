@@ -476,6 +476,14 @@ async function analyzeCandidates() {
   const batteryInput = $("#battery-input");
   const prioritySelect = $("#priority-select");
   const analyzeBtn = $("#analyze-btn");
+
+  // Require the user's location before computing feasible chargers.
+  if (!state.userPos) {
+    setStatus("Please enable your location (◎) first — tap “Use my location” before finding feasible chargers.");
+    analyzeBtn.disabled = false;
+    return;
+  }
+
   const vehicle = VEHICLES[vehicleSelect.value];
   const origin = state.userPos || { lat: BLR_CENTER[0], lng: BLR_CENTER[1] };
   const connector = vehicle.connector;
