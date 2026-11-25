@@ -1,14 +1,14 @@
 "use strict";
 
-const { spawn } = require("child_process");
+// ML scorer — Node.js port of ml/predict.py. Runs the saved feed-forward
+// model (14→24→12→1) directly without Python, so it works on Vercel
+// serverless and any Node.js host.
+
 const path = require("path");
+const { scoreCandidates } = require("../../ml/predict");
 
-const PYTHON_BIN = process.env.PYTHON_BIN || "python";
-const PREDICT_SCRIPT = path.join(__dirname, "..", "..", "ml", "predict.py");
-
-// Must match FEATURES in ml/train_model.py (predict.py reads the same order
-// from the saved model). Validated here so bad rows fail fast with a 400
-// instead of crashing the Python process into a generic 500.
+// Must match FEATURES in ml/train_model.py. Validated here so bad rows fail
+// fast with a 400 instead of producing garbage scores.
 const FEATURES = [
   "distanceKm", "estimatedDriveMin", "trafficPct", "compatible",
   "usablePowerKw", "crowdPct", "estimatedWaitMin", "availabilityRatio",
@@ -44,34 +44,13 @@ function validateCandidates(candidates) {
   });
 }
 
-function scoreCandidates(candidates) {
-  return new Promise((resolve, reject) => {
-    try {
-      validateCandidates(candidates);
-    } catch (err) {
-      reject(err);
-      return;
-    }
-    const child = spawn(PYTHON_BIN, [PREDICT_SCRIPT], { stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (chunk) => { stdout += chunk; });
-    child.stderr.on("data", (chunk) => { stderr += chunk; });
-    child.on("error", () => reject(new Error("ML scorer could not start. Set PYTHON_BIN to a Python installation with NumPy.")));
-    child.on("close", (code) => {
-      if (code !== 0) return reject(new Error(`ML scorer failed${stderr ? `: ${stderr.trim()}` : ""}`));
-      try {
-        const result = JSON.parse(stdout);
-        if (!Array.isArray(result.scores) || result.scores.length !== candidates.length) {
-          throw new Error("ML scorer returned an invalid score set.");
-        }
-        resolve(result);
-      } catch (err) {
-        reject(err);
-      }
-    });
-    child.stdin.end(JSON.stringify({ candidates }));
-  });
+function scoreCandidatesWrapper(candidates) {
+  validateCandidates(candidates);
+  const result = scoreCandidates(candidates);
+  if (!Array.isArray(result.scores) || result.scores.length !== candidates.length) {
+    throw new Error("ML scorer returned an invalid score set.");
+  }
+  return { scores: result.scores, modelVersion: result.modelVersion };
 }
 
-module.exports = { scoreCandidates };
+module.exports = { scoreCandidates: scoreCandidatesWrapper };
