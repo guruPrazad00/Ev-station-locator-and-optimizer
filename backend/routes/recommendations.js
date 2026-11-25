@@ -103,7 +103,13 @@ router.get("/candidates", async (req, res, next) => {
     };
   }));
 
-  const scored = await scoreCandidates(candidates.map((candidate) => candidate.features));
+  let scored;
+  try {
+    scored = await scoreCandidates(candidates.map((candidate) => candidate.features));
+  } catch (mlErr) {
+    console.error("ML scorer error:", mlErr.stack);
+    throw mlErr;
+  }
   candidates.forEach((candidate, index) => { candidate.aiScore = scored.scores[index]; });
   candidates.sort((a, b) => b.aiScore - a.aiScore);
   const liveTrafficCount = candidates.filter((c) => c.trafficMode === "live").length;

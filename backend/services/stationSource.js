@@ -59,27 +59,53 @@ function matchesText(s, needle) {
   );
 }
 
-async function searchStations({ q, connector, limit, extra = [] }) {
-  // Shared data = live-cached stations first, curated demo set beneath.
-  // Community listings are appended after live extras (they carry their own ids).
+// Merge live stations (OCM/Overpass) with community + curated, deduplicated by id.
+// Live stations come first so real pins always take priority.
+async function mergeStations(lat, lng, radiusKm, source = "auto") {
+  const liveStations = [];
+  try {
+    const { getLiveStations } = require("./liveSources");
+    const result = await getLiveStations(lat, lng, radiusKm, source);
+    if (Array.isArray(result.stations)) liveStations.push(...result.stations);
+  } catch {
+    // Live failed — continue with community + curated only.
+  }
+  const community = await communityStations();
+  const curated = loadCurated();
+
   const seen = new Set();
   const combined = [];
-  for (const s of [...extra, ...(await communityStations()), ...loadCurated()]) {
+  for (const s of [...liveStations, ...community, ...curated]) {
     if (!s || seen.has(s.id)) continue;
     seen.add(s.id);
     combined.push(s);
   }
-  let stations = combined;
-  if (q) {
-    const needle = String(q).toLowerCase();
-    stations = stations.filter((s) => matchesText(s, needle));
-  }
-  stations = filterByConnector(stations, connector);
-  return stations.slice(0, limit);
+  return combined;
 }
 
-async function nearbyStations({ lat, lng, radiusKm, connector, limit }) {
-  let stations = [...(await communityStations()), ...loadCurated()];
+async function searchStations({ q, connector, limit, extra = [] }) {
+  // Shared data = live-cached stations first (passed as extra), then community,
+  // then curated demo set beneath.
+  const community = await communityStations();
+  const curated = loadCurated();
+  const seen = new Set();
+  const deduped = [];
+  for (const s of [...extra, ...community, ...curated]) {
+    if (!s || seen.has(s.id)) continue;
+    seen.add(s.id);
+    deduped.push(s);
+  }
+  let result = deduped;
+  if (q) {
+    const needle = String(q).toLowerCase();
+    result = result.filter((s) => matchesText(s, needle));
+  }
+  result = filterByConnector(result, connector);
+  return result.slice(0, limit);
+}
+
+async function nearbyStations({ lat, lng, radiusKm, connector, limit, source = "auto" }) {
+  let stations = await mergeStations(lat, lng, radiusKm, source);
   stations = filterByConnector(stations, connector);
   return stations
     .map((s) => ({ ...s, distanceKm: haversineKm(lat, lng, s.lat, s.lng) }))
@@ -105,4 +131,5 @@ module.exports = {
   searchStations,
   nearbyStations,
   getStationById,
+  mergeStations,
 };
