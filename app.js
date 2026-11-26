@@ -53,6 +53,33 @@ function setStatus(msg) {
   statusEl.textContent = msg;
 }
 
+// Detect mobile layout for scroll behavior.
+function isMobile() {
+  return window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+}
+
+// Wrap geolocation in a promise so callers can await the user's location.
+function getUserLocation() {
+  return new Promise((resolve, reject) => {
+    if (!("geolocation" in navigator)) {
+      reject(new Error("Geolocation is not supported by this browser."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+      (err) => reject(new Error({ 1: "Location permission denied.", 2: "Location unavailable.", 3: "Location request timed out." }[err.code] || "Could not get your location.")),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    );
+  });
+}
+
+// Scroll the page to the map section on mobile so the route is visible.
+function scrollToMap() {
+  if (!isMobile()) return;
+  const mapWrap = document.querySelector(".map-wrap") || document.getElementById("map");
+  if (mapWrap) mapWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function setDataSourceNote() {
   if (!dataSourceEl) return;
   dataSourceEl.textContent = state.provider
@@ -340,13 +367,22 @@ function showDetail(s, route, routeError) {
     logChoice("bad", s);
     setStatus("Thanks — your rating was recorded for research.");
   };
-  detailEl.querySelector("#detail-directions").onclick = () => {
+  detailEl.querySelector("#detail-directions").onclick = async () => {
     if (!state.userPos) {
-      setStatus("Enable location (◎) first to draw the driving route.");
-      locateUser();
-      return;
+      setStatus("Locating you… Please allow location access to draw the driving route.");
+      try {
+        const pos = await getUserLocation();
+        setUserPos(pos.lat, pos.lng, pos.accuracy);
+        state.map.setView([pos.lat, pos.lng], 13);
+        scrollToMap();
+      } catch (err) {
+        setStatus(`${err.message} Showing central Bengaluru instead. Open in Maps for directions.`);
+        scrollToMap();
+        return;
+      }
     }
     logChoice("directions", s);
+    scrollToMap();
     if (state.routeLine) state.map.fitBounds(state.routeLine.getBounds(), { padding: [50, 50] });
     else selectStation(s.id);
   };
@@ -415,10 +451,18 @@ async function selectStation(id) {
     state.map.panTo([station.lat, station.lng], { animate: true });
   }
   if (!state.userPos) {
-    state.selectedRoute = null;
-    showDetail(station, null);
-    setStatus(`Selected “${station.name}”. Enable location (◎) to draw the driving route.`);
-    return;
+    setStatus("Locating you… Please allow location access to draw the driving route.");
+    try {
+      const pos = await getUserLocation();
+      setUserPos(pos.lat, pos.lng, pos.accuracy);
+      state.map.setView([pos.lat, pos.lng], 13);
+      scrollToMap();
+    } catch (err) {
+      state.selectedRoute = null;
+      showDetail(station, null);
+      setStatus(`${err.message} Showing central Bengaluru instead. Open in Maps for directions.`);
+      return;
+    }
   }
   // Same station re-tapped and route already known: reuse, no new request.
   if (state.selectedRoute && state.selectedRoute.stationId === id && state.routeLine) {
